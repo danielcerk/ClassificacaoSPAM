@@ -1,16 +1,49 @@
+import csv
 import os
-import pandas as pd
+from deep_translator import GoogleTranslator
+import time
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CSV_PATH = os.path.join(BASE_DIR, "emails.csv")
+CSV_ORIGINAL = '/home/kelvin/a3jairo/ClassificacaoSPAM/emails.csv'
+CSV_TEMP = '/home/kelvin/a3jairo/ClassificacaoSPAM/emails_temp.csv'
 
-# Transformar o dataset em português ( Usar a lib do google para tradução em massa )
+translator = GoogleTranslator(source='en', target='pt')
 
-if not os.path.exists(CSV_PATH):
+def traduzir_texto(texto):
+    if texto is None or texto.strip() == '' or texto.lower() == 'nan':
+        return texto
+    try:
+        texto_para_traduzir = texto[:4500]
+        traducao = translator.translate(texto_para_traduzir)
+        if traducao and traducao != texto:
+            return traducao
+        else:
+            return GoogleTranslator(source='auto', target='pt').translate(texto_para_traduzir)
+    except Exception as e:
+        print(f"Aviso: Erro ao traduzir '{texto[:50]}...': {e}")
+        return texto
 
-    raise SystemExit(f"Arquivo CSV não encontrado em {CSV_PATH}")
+with open(CSV_ORIGINAL, mode='r', encoding='utf-8', newline='') as arquivo_entrada, \
+     open(CSV_TEMP, mode='w', encoding='utf-8-sig', newline='') as arquivo_saida:
 
-df = pd.read_csv(CSV_PATH, encoding="latin1", engine="python", on_bad_lines="skip")
+    leitor = csv.DictReader(arquivo_entrada)
+    campos = leitor.fieldnames
+    if campos is None:
+        raise ValueError("Arquivo CSV está vazio ou sem cabeçalho válido.")
 
-# Vamos conseguir todas as linhas
-# Adicionar NLP para identificar se é ou não
+    escritor = csv.DictWriter(arquivo_saida, fieldnames=campos)
+    escritor.writeheader()
+
+    linha_num = 0
+    for linha in leitor:
+        linha_num += 1
+        for coluna, valor in linha.items():
+            if valor is not None and isinstance(valor, str):
+                linha[coluna] = traduzir_texto(valor)
+                time.sleep(0.3)  
+        escritor.writerow(linha)
+        if linha_num % 10 == 0:
+            print(f"Traduzidas {linha_num} linhas...")
+
+os.replace(CSV_TEMP, CSV_ORIGINAL)
+
+print(f"\nTradução completa Arquivo atualizado:\n{CSV_ORIGINAL}")
