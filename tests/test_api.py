@@ -2,7 +2,7 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import pytest
 from flask import Flask
-from app import app
+from api.app import app
 from train import spam_detector
 
 
