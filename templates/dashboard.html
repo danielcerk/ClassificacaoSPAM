@@ -1,0 +1,203 @@
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #007bff, #6610f2);
+            min-height: 100vh;
+            color: white;
+            padding-left: 80px;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 40px 0;
+            font-size: 2.8rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-shadow: 0 3px 6px rgba(0,0,0,0.3);
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            transition: width 0.3s ease;
+            overflow: hidden;
+            padding-top: 20px;
+            z-index: 999;
+            border-right: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .sidebar:hover {
+            width: 200px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+
+        .sidebar ul li {
+            padding: 15px 20px;
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+        }
+
+        .sidebar ul li a {
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            font-size: 18px;
+            white-space: nowrap;
+            transition: padding-left 0.2s ease;
+            text-align: center; 
+        }
+
+        .sidebar ul li a:hover {
+            padding-left: 10px;
+            text-shadow: 0 0 5px #fff;
+        }
+
+        .card-custom {
+            border: none;
+            border-radius: 15px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(6px);
+            color: white;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: 0.3s;
+        }
+
+        .card-custom:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+
+        canvas {
+            background: rgba(255,255,255,0.12);
+            padding: 20px;
+            border-radius: 14px;
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <ul>
+            <li><a href="/home">Home</a></li>
+            <li><a href="/dashboard">Dashboard</a></li>
+        </ul>
+    </div>
+
+    <h1>Dashboard</h1>
+
+    {% if error %}
+
+        <p class="text-center text-warning">{{ error }}</p>
+
+    {% endif %}
+
+    {% if stats %}
+
+    <div class="container mb-5">
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card-custom">
+                    <h3>Total Spam</h3>
+                    <h2>{{ stats.spam }}</h2>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card-custom">
+                    <h3>Total Legítimas</h3>
+                    <h2>{{ stats.ham }}</h2>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card-custom">
+                    <h3>% Spam</h3>
+                    <h2>{{ stats.spam_percent }}%</h2>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card-custom">
+                    <h3>% Legítimo</h3>
+                    <h2>{{ stats.ham_percent }}%</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+        <div class="row g-5">
+
+            <div class="col-md-6">
+                <canvas id="chartPizza"></canvas>
+            </div>
+
+            <div class="col-md-6">
+                <canvas id="chartBar"></canvas>
+            </div>
+
+        </div>
+    </div>
+
+    {% endif %}
+
+    <script>
+        const dashboardStats = JSON.parse(`{{ stats | tojson | safe }}`);
+
+        new Chart(document.getElementById('chartPizza'), {
+            type: 'pie',
+            data: {
+                labels: ['Spam', 'Ham'],
+                datasets: [{
+                    data: [dashboardStats.spam, dashboardStats.ham]
+                }]
+            }
+        });
+
+        new Chart(document.getElementById('chartBar'), {
+            type: 'bar',
+            data: {
+                labels: ['Spam (%)', 'Ham (%)'],
+                datasets: [{
+                    data: [dashboardStats.spam_percent, dashboardStats.ham_percent]
+                }]
+            }
+        });
+    </script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Classificador de SPAM - IA Detector</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+  <div class="sidebar">
+    <ul>
+      <li><a href="#">Home</a></li>
+      <li><a href="/dashboard">Dashboard</a></li>
+      <li><a href="#"></a></li>
+    </ul>
+  </div>
+
+  <h1>Classificador de SPAM</h1>
+  <p class="subtitle">Verifique se sua mensagem é legítima ou spam!</p>
+
+  <form id="spamForm">
+    <textarea
+      name="text"
+      placeholder="Digite sua mensagem aqui..."
+      required
+      rows="4">
+    </textarea>
+    <button type="submit">Analisar Mensagem</button>
+  </form>
+
+  <div id="resultado"></div>
+
+  <div id="historico">
+    <h2>Histórico de Testes</h2>
+    <div id="listaHistorico"></div>
+  </div>
+
+  <script>
+    document.getElementById('spamForm').onsubmit = async (e) => {
+      e.preventDefault();
+
+      const text = e.target.text.value.trim();
+      const url = window.location.origin + '/predict';
+      const resultadoDiv = document.getElementById('resultado');
+
+      if (!text) {
+        resultadoDiv.innerHTML = '<p style="color:red;">Digite uma mensagem.</p>';
+        return;
+      }
+
+      resultadoDiv.innerHTML = '<p>Analisando...</p>';
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          resultadoDiv.innerHTML = `<p style="color:red;">Erro: ${data.error}</p>`;
+          return;
+        }
+
+        const isSpam = data.label === 1;
+        const tipo = isSpam ? 'spam' : 'ham';
+        const texto = isSpam ? 'É SPAM!' : 'Não é SPAM';
+
+        resultadoDiv.innerHTML = `<p class="${tipo}">${texto}</p>`;
+
+        const historico = document.getElementById('listaHistorico');
+        const entrada = document.createElement('div');
+        const timestamp = new Date().toLocaleString('pt-BR');
+
+        entrada.classList.add('registro');
+        entrada.innerHTML = `
+          <strong>Resultado:</strong> ${isSpam ? 'SPAM' : 'Legítimo'}<br>
+          <strong>Mensagem:</strong> ${text}<br>
+          <small><em>${timestamp}</em></small>
+        `;
+
+        historico.prepend(entrada);
+
+      } catch (err) {
+        resultadoDiv.innerHTML =
+          '<p style="color:red;">Erro ao conectar com o servidor.</p>';
+        console.error(err);
+      }
+    };
+  </script>
+
+</body>
+</html>
