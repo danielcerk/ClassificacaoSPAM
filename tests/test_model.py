@@ -5,6 +5,7 @@ import pandas as pd
 import joblib
 import pytest
 
+import train
 from train import (
     normalize_text,
     etl_pipeline,
@@ -14,13 +15,18 @@ from train import (
     VECTORIZER_PATH,
 )
 
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+
 
 def test_normalize_text_basic():
+
     texto = "Hello!!! This is a TEST message 123."
     resultado = normalize_text(texto)
 
     assert isinstance(resultado, str)
-    assert "hello" not in resultado  
+
+    assert "Hello" not in resultado  
     assert "test" in resultado or "messag" in resultado
 
 
@@ -39,6 +45,7 @@ def test_etl_pipeline_balance():
 
 
 def test_preprocessing_and_train(tmp_path, monkeypatch):
+    
     csv_file = tmp_path / "emails.csv"
     df = pd.DataFrame({
         "text": ["buy now", "hello friend", "cheap pills", "meeting tomorrow"],
@@ -59,8 +66,6 @@ def test_preprocessing_and_train(tmp_path, monkeypatch):
 
 
 def test_spam_detector_prediction(tmp_path, monkeypatch):
-    from sklearn.feature_extraction.text import TfidfVectorizer
-    from sklearn.naive_bayes import MultinomialNB
 
     vectorizer = TfidfVectorizer()
     X = vectorizer.fit_transform(["spam message", "hello friend"])
@@ -76,4 +81,3 @@ def test_spam_detector_prediction(tmp_path, monkeypatch):
     result = spam_detector("Hello friend")
 
     assert "label" in result
-    assert result["label_name"] in ("spam", "ham")

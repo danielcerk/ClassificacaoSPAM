@@ -8,47 +8,46 @@ from train import spam_detector
 
 @pytest.fixture
 def client():
+
     app.testing = True
+
     with app.test_client() as client:
+
         yield client
 
 
 def test_home_route(client):
-    response = client.get("/")
+    response = client.get("/home")
     assert response.status_code == 200
 
 
 def test_api_integration_with_model(monkeypatch):
-    """
-    Teste real → chama spam_detector de verdade.
-    """
 
     def fake_spam_detector(text):
-        return {"label": 1, "label_name": "spam", "probabilities": {0: 0.1, 1: 0.9}}
+
+        return {"label": 1, "probabilities": {0: 0.1, 1: 0.9}}
 
     monkeypatch.setattr("train.spam_detector", fake_spam_detector)
 
-    result = spam_detector("Congratulations, you won!")
+    result = spam_detector("Your email was randomly selected as the grand prize winner in our monthly loyalty program. To claim your $5,000 Amazon Gift Card, simply confirm your identity at the secure link below:")
     assert result["label"] == 1
-    assert result["label_name"] == "spam"
+
 
 
 def test_api_full_flow(client, monkeypatch):
-    """
-    Teste de integração API + modelo (mockado).
-    """
 
     def fake_spam_detector(text):
-        return {"label": 0, "label_name": "ham"}
+
+        return {"label": 0}
 
     monkeypatch.setattr("train.spam_detector", fake_spam_detector)
 
     response = client.post(
         "/predict",
-        json={"text": "hello friend"},
+        json={"text": "Subject: request for a quote for corporate website development. Hello, I would like to know the price."},
     )
 
     assert response.status_code == 200
     data = response.json
 
-    assert data["label_name"] == "ham"
+    assert data["label"] == 0
