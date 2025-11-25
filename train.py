@@ -120,11 +120,29 @@ def preprocessing_and_train(csv_path=CSV_PATH, test_size=0.2, random_state=42):
     X = df_processed["text_norm"].values
     y = df_processed[label_col].values
 
+    min_test_size = 2
+
+    if len(df_processed) * test_size < min_test_size:
+
+        test_size = min_test_size / len(df_processed)
+
+    stratify_arg = y if len(np.unique(y)) > 1 and len(df_processed) >= 4 else None
+
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size, random_state=random_state, stratify=y
+        X, y, test_size=test_size, random_state=random_state, stratify=stratify_arg
     )
 
-    vectorizer = TfidfVectorizer(ngram_range=(1, 2), min_df=2)
+    min_df_value = 1
+
+    if len(df_processed) >= 50:
+        
+        min_df_value = 2
+
+    vectorizer = TfidfVectorizer(
+        ngram_range=(1, 2),
+        min_df=min_df_value
+    )
+
 
     X_train_tfidf = vectorizer.fit_transform(X_train)
 
@@ -174,7 +192,6 @@ def spam_detector(content: str):
 
     return {
         "label": int(pred),
-        "label_name": "spam" if int(pred) == 1 else "ham",
         "probabilities": prob,
     }
 
