@@ -64,6 +64,7 @@ with open(CSV_PATH, mode='r', encoding='utf-8', newline='') as arquivo_entrada, 
             
             print(f"Traduzidas {linha_num} linhas...")
 
+
 os.replace('emails_pt.csv', CSV_PATH)
 
 print(f"\nTradução completa Arquivo atualizado:\n{CSV_PATH}")

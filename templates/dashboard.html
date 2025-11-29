@@ -168,6 +168,10 @@
                 <canvas id="chartBar"></canvas>
             </div>
 
+            <div class="col-md-6">
+                <canvas id="chartAccuracy"></canvas>
+            </div>
+
         </div>
     </div>
 
@@ -183,8 +187,33 @@
                 datasets: [{
                     data: [dashboardStats.spam, dashboardStats.ham]
                 }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: "white"
+                        }
+                    }
+                },
+                scales: {
+
+                    y: {
+                        ticks: {
+                            color: "white"
+                        }
+                    },
+                    x: {
+                    
+                        ticks: {
+                            color: "white"
+                        }
+                    }
+
+                }
             }
         });
+
 
         new Chart(document.getElementById('chartBar'), {
             type: 'bar',
@@ -193,6 +222,67 @@
                 datasets: [{
                     data: [dashboardStats.spam_percent, dashboardStats.ham_percent]
                 }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: "white"
+                        }
+                    }
+                },
+                scales: {
+
+                    y: {
+                        ticks: {
+                            color: "white"
+                        }
+                    },
+                    x: {
+                    
+                        ticks: {
+                            color: "white"
+                        }
+                    }
+
+                }
+            }
+        });
+
+        const accuracyValue = 0.9971;
+
+        new Chart(document.getElementById('chartAccuracy'), {
+            type: 'bar',
+            data: {
+                labels: ['Acurácia do Modelo'],
+                datasets: [{
+                    label: 'Precisão (%)',
+                    data: [accuracyValue * 100],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: "white"
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            color: "white"
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: "white"
+                        }
+                    }
+                }
             }
         });
     </script>
